@@ -55,6 +55,19 @@ class App extends React.Component {
         });
       });
 
+      await this.updateChannels();
+
+      setInterval(() => {
+        this.updateChannels();
+      }, 30000);
+
+    } catch(err) {
+      handleError(err);
+    }
+  }
+
+  async updateChannels() {
+    try {
       const channelsFromDB = await db.channels.find({});
       const channels = channelsFromDB.map(c => new Channel(c));
       const videosFromDB = await db.videos.find({});
@@ -66,21 +79,15 @@ class App extends React.Component {
       });
 
       if(channels.length > 0) {
-        swal({
-          title: 'Updating channels...',
-          showConfirmButton: false,
-          allowEscapeKey: false,
-          allowOutsideClick: false,
-          allowEnterKey: false
-        });
         await new Promise(resolve => setTimeout(resolve, 500));
         const newVideos = [];
-        for(let i = 0; i < channels.length; i++) {
+        for (let i = 0; i < channels.length; i++) {
           const channel = channels[i];
-          const { items } = await getFeedFromURL(channel.feedUrl);
-          for(const item of items) {
+          const {items} = await
+          getFeedFromURL(channel.feedUrl);
+          for (const item of items) {
             const found = db.videos.findOne({_id: item.guid});
-            if(!found) {
+            if (!found) {
               const video = new Video({
                 ...item,
                 channel: channel._id
@@ -97,9 +104,7 @@ class App extends React.Component {
             ...newVideos
           ]
         });
-        swal.close();
       }
-
     } catch(err) {
       handleError(err);
     }
