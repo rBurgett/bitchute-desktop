@@ -60,8 +60,6 @@ const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChann
 
     const onContextMenu = e => {
       e.preventDefault();
-      console.log(e);
-      console.log(e.clientX, e.clientY);
       const menu = Menu.buildFromTemplate([
         {
           label: 'Mark all watched',

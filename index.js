@@ -22,7 +22,7 @@ app.on('ready', () => {
   const appWindow = new BrowserWindow({
     show: false,
     width: width - 200,
-    height: height - 200
+    height: height - 150
   });
 
   appWindow.once('ready-to-show', () => {

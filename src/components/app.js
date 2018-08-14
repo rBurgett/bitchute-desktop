@@ -39,7 +39,8 @@ class App extends React.Component {
       'onDeleteChannel',
       'onPlayVideo',
       'onMarkWatched',
-      'onMarkAllWatched'
+      'onMarkAllWatched',
+      'onMarkUnwatched'
     ]);
   }
 
@@ -218,7 +219,25 @@ class App extends React.Component {
     } catch(err) {
       handleError(err);
     }
+  }
 
+  async onMarkUnwatched(_id) {
+    try{
+      const { videos } = this.state;
+      const idx = videos.findIndex(v => v._id === _id);
+      const video = videos[idx];
+      this.setState({
+        ...this.state,
+        videos: [
+          ...videos.slice(0, idx),
+          video.set('played', false),
+          ...videos.slice(idx + 1)
+        ]
+      });
+      await db.videos.update({ _id }, {$set: {played: false}});
+    } catch(err) {
+      handleError(err);
+    }
   }
 
   async onMarkAllWatched(_id) {
@@ -270,7 +289,7 @@ class App extends React.Component {
         </nav>
         <div style={styles.flexContainer}>
           {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} onMarkAllWatched={this.onMarkAllWatched} />}
-          {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} onMarkWatched={this.onMarkWatched} />}
+          {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} onMarkWatched={this.onMarkWatched} onMarkUnwatched={this.onMarkUnwatched} />}
         </div>
       </div>
     );
