@@ -1,3 +1,4 @@
+import { remote } from 'electron';
 import bindAll from 'lodash/bindAll';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -7,8 +8,19 @@ import swal from 'sweetalert2';
 import Sidebar from './sidebar';
 import Channel from './channel';
 import Video from './video';
+import MainArea from './main-area';
+
+const { BrowserWindow } = remote;
 
 const parser = new Parser();
+
+const getFeedFromURL = async function(feedURL) {
+  const { text } = await request.get(feedURL)
+    .buffer()
+    .type('xml');
+  const feed = await parser.parseString(text);
+  return feed;
+};
 
 class App extends React.Component {
 
@@ -24,7 +36,8 @@ class App extends React.Component {
     bindAll(this, [
       'onAddChannelClick',
       'onChannelClick',
-      'onDeleteChannel'
+      'onDeleteChannel',
+      'onPlayVideo'
     ]);
   }
 
@@ -40,13 +53,50 @@ class App extends React.Component {
         });
       });
 
-      const channels = await db.channels.find({});
-      const videos = await db.videos.find({});
+      const channelsFromDB = await db.channels.find({});
+      const channels = channelsFromDB.map(c => new Channel(c));
+      const videosFromDB = await db.videos.find({});
+      const videos = videosFromDB.map(v => new Video(v));
       this.setState({
         ...this.state,
-        channels: channels.map(c => new Channel(c)),
-        videos: videos.map(v => new Video(v))
+        channels,
+        videos
       });
+
+      if(channels.length > 0) {
+        swal({
+          title: 'Updating channels...',
+          showConfirmButton: false,
+          allowEscapeKey: false,
+          allowOutsideClick: false,
+          allowEnterKey: false
+        });
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const newVideos = [];
+        for(let i = 0; i < channels.length; i++) {
+          const channel = channels[i];
+          const { items } = await getFeedFromURL(channel.feedUrl);
+          for(const item of items) {
+            const found = db.videos.findOne({_id: item.guid});
+            if(!found) {
+              const video = new Video({
+                ...item,
+                channel: channel._id
+              });
+              newVideos.push(video);
+              db.videos.insert(video);
+            }
+          }
+        }
+        this.setState({
+          ...this.state,
+          videos: [
+            ...this.state.videos,
+            ...newVideos
+          ]
+        });
+        swal.close();
+      }
 
     } catch(err) {
       handleError(err);
@@ -63,10 +113,7 @@ class App extends React.Component {
       const value = origValue ? origValue.trim().toLowerCase() : origValue;
       if(!value) return;
       const feedURL = `https://www.bitchute.com/feeds/rss/channel/${value}`;
-      const { text } = await request.get(feedURL)
-        .buffer()
-        .type('xml');
-      const feed = await parser.parseString(text);
+      const feed = await getFeedFromURL(feedURL);
       const channel = new Channel(feed);
       const channelFromDB = await db.channels.findOne({ feedUrl: channel.feedUrl });
       if(channelFromDB) {
@@ -135,6 +182,18 @@ class App extends React.Component {
     }
   }
 
+  onPlayVideo(_id) {
+    console.log(_id);
+    const video = this.state.videos.find(v => v._id === _id);
+    let win = new BrowserWindow({
+      backgroundColor: '#000'
+    });
+    win.on('closed', () => {
+      win = null;
+    });
+    win.loadURL(video.link);
+  }
+
   render() {
 
     console.log('state', this.state);
@@ -149,11 +208,6 @@ class App extends React.Component {
         flexWrap: 'nowrap',
         justifyContent: 'flex-start',
         height: windowHeight - 50
-      },
-      col2: {
-        flexGrow: 1,
-        height: '100%',
-        padding: 15
       }
     };
 
@@ -164,7 +218,7 @@ class App extends React.Component {
         </nav>
         <div style={styles.flexContainer}>
           {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} />}
-          <div style={styles.col2}></div>
+          {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} />}
         </div>
       </div>
     );

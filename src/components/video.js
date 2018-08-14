@@ -33,9 +33,9 @@ class Video {
     /** @type {string} */
     this.channel = data.channel;
     /** @type {boolean} */
-    this.played = data.played;
+    this.played = data.played || false;
     /** @type {number} */
-    this.progress = data.progress;
+    this.progress = data.progress || 0;
     /** @type {VideoEnclosure} */
     this.enclosure = data.enclosure;
   }

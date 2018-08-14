@@ -13,7 +13,7 @@ const Sidebar = ({ selectedChannel, channels, onAddChannelClick, onChannelClick,
 
   const styles = {
     col1: {
-      width: 300,
+      minWidth: 300,
       height: '100%',
       borderRightColor: borderColor,
       borderRightStyle: 'solid',

@@ -1,0 +1,9 @@
+.video-item {
+  cursor: pointer;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 1px;
+}
+.video-item:hover {
+  border-color: #434857;
+}
