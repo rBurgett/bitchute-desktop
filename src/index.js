@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Datastore from 'nedb';
+import Datastore from 'nedb-promises';
 import path from 'path';
 import swal from 'sweetalert2';
 import App from './components/app';

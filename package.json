@@ -36,12 +36,13 @@
     "fs-extra-promise": "^1.0.1",
     "jquery": "^3.3.1",
     "lodash": "^4.17.10",
-    "nedb": "^1.8.0",
+    "nedb-promises": "^3.0.1",
     "prop-types": "^15.6.2",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "rss-parser": "^3.4.2",
     "superagent": "^3.8.3",
-    "sweetalert2": "^7.26.11"
+    "sweetalert2": "^7.26.11",
+    "uuid": "^3.3.2"
   }
 }
