@@ -67,3 +67,4 @@ typings/
 /dist
 /temp
 /cache
+package-lock.json

@@ -1,6 +1,6 @@
 {
   "name": "bitchute-desktop",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "Unofficial BitChute desktop application.",
   "main": "index.js",
   "scripts": {
