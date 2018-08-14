@@ -56,19 +56,6 @@ class App extends React.Component {
         });
       });
 
-      await this.updateChannels();
-
-      setInterval(() => {
-        this.updateChannels();
-      }, 30000);
-
-    } catch(err) {
-      handleError(err);
-    }
-  }
-
-  async updateChannels() {
-    try {
       const channelsFromDB = await db.channels.find({});
       const channels = channelsFromDB.map(c => new Channel(c));
       const videosFromDB = await db.videos.find({});
@@ -79,15 +66,27 @@ class App extends React.Component {
         videos
       });
 
+      await this.updateChannels(channels);
+
+      setInterval(() => {
+        this.updateChannels(this.state.channels);
+      }, 30000);
+
+    } catch(err) {
+      handleError(err);
+    }
+  }
+
+  async updateChannels(channels) {
+    try {
       if(channels.length > 0) {
-        await new Promise(resolve => setTimeout(resolve, 500));
         const newVideos = [];
         for (let i = 0; i < channels.length; i++) {
           const channel = channels[i];
           const {items} = await
           getFeedFromURL(channel.feedUrl);
           for (const item of items) {
-            const found = db.videos.findOne({_id: item.guid});
+            const found = await db.videos.findOne({_id: item.guid});
             if (!found) {
               const video = new Video({
                 ...item,
