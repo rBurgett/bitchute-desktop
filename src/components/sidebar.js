@@ -7,7 +7,7 @@ import Video from './video';
 
 const { Menu } = remote;
 
-const Sidebar = ({ selectedChannel, channels, onAddChannelClick, onChannelClick, onDeleteChannel }) => {
+const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChannelClick, onDeleteChannel }) => {
 
   const borderColor = '#434857';
 
@@ -48,6 +48,11 @@ const Sidebar = ({ selectedChannel, channels, onAddChannelClick, onChannelClick,
 
   const items = channels.map(c => {
 
+    const unplayedLength = videos
+      .filter(v => v.channel === c._id)
+      .filter(v => !v.played)
+      .length;
+
     const onClick = e => {
       e.preventDefault();
       onChannelClick(c._id);
@@ -77,7 +82,7 @@ const Sidebar = ({ selectedChannel, channels, onAddChannelClick, onChannelClick,
 
     return (
       <li key={c._id} className={'nav-item'}>
-        <a href={'#'} className={'nav-link' + (c._id === selectedChannel ? ' active' : '')} onClick={onClick} onContextMenu={onContextMenu}>{c.title}</a>
+        <a href={'#'} className={'nav-link' + (c._id === selectedChannel ? ' active' : '')} onClick={onClick} onContextMenu={onContextMenu}>{c.title} <small className={'badge badge-unwatched'}>{unplayedLength}</small></a>
       </li>
     );
   });

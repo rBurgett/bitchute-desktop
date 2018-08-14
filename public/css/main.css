@@ -13,3 +13,6 @@
 .unplayed-marker:hover {
   background-color: #FFAE4B;
 }
+.badge.badge-unwatched {
+  background-color: #FFAE4B;
+}
