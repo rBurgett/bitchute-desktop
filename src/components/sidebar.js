@@ -38,7 +38,7 @@ const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChann
     },
     col1ListContainer: {
       flexGrow: 1,
-      overflowY: 'scroll',
+      overflowY: 'auto',
       paddingTop: 15,
       paddingLeft: 15,
       paddingRight: 15,

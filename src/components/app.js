@@ -272,6 +272,9 @@ class App extends React.Component {
     const { version } = this.props;
 
     const styles = {
+      container: {
+        paddingTop: 50
+      },
       flexContainer: {
         display: 'flex',
         flexDirection: 'row',
@@ -282,7 +285,7 @@ class App extends React.Component {
     };
 
     return (
-      <div className={'with-top-navbar'}>
+      <div style={styles.container}>
         <nav className={'navbar navbar-expand-sm fixed-top navbar-dark bg-dark app-navbar'}>
           <a className="navbar-brand" href={'#'}>BitChute Desktop <span className={'text-muted'}>{version}</span></a>
         </nav>
