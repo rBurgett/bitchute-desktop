@@ -56,10 +56,11 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkU
       };
       const onContextMenu = e => {
         e.preventDefault();
+        const videoLink = `https://www.bitchute.com/video/${v._id}/`;
         const menu = Menu.buildFromTemplate([
           {
             label: v.played ? 'Mark unwatched' : 'Mark watched',
-            click: async function() {
+            click: () => {
               try {
                 if(v.played) {
                   onMarkUnwatched(v._id);
@@ -76,9 +77,9 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkU
           },
           {
             label: 'Copy video URL',
-            click: async function() {
+            click: () => {
               try {
-                clipboard.writeText(`https://www.bitchute.com/video/${v._id}/`);
+                clipboard.writeText(videoLink);
               } catch(err) {
                 handleError(err);
               }
@@ -86,12 +87,22 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkU
           },
           {
             label: 'Copy embed URL',
-            click: async function() {
+            click: () => {
               try {
                 clipboard.writeText(v.link);
               } catch(err) {
                 handleError(err);
               }
+            }
+          },
+          {
+            type: 'separator'
+          },
+          {
+            label: 'Open in browser',
+            click: () => {
+              const { openExternal } = remote.shell;
+              openExternal(videoLink);
             }
           }
         ]);
