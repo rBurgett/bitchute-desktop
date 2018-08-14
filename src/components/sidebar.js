@@ -124,7 +124,7 @@ const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChann
 
     return (
       <li key={c._id} className={'nav-item'}>
-        <a href={'#'} className={'nav-link' + (c._id === selectedChannel ? ' active' : '')} onClick={onClick} onContextMenu={onContextMenu}>{c.title} {unplayedLength > 0 ? <small className={'badge badge-unwatched'}>{unplayedLength}</small> : ''}</a>
+        <a href={'#'} style={{outline: 'none'}} className={'nav-link' + (c._id === selectedChannel ? ' active' : '')} onClick={onClick} onContextMenu={onContextMenu}>{c.title} {unplayedLength > 0 ? <small className={'badge badge-unwatched'}>{unplayedLength}</small> : ''}</a>
       </li>
     );
   });
@@ -139,7 +139,7 @@ const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChann
       <div style={styles.col1Header}>
         <h2 style={{flexGrow: 1, cursor: 'default'}}>Channels</h2>
         <div>
-          <button type={'button'} style={{cursor: 'pointer'}} className={'btn btn-outline-primary'} onClick={addChannelClicked}><i className={'fa fa-plus'} /></button>
+          <button type={'button'} style={{cursor: 'pointer', outline: 'none'}} className={'btn btn-outline-primary'} onClick={addChannelClicked}><i className={'fa fa-plus'} /></button>
         </div>
       </div>
       <div style={styles.col1ListContainer}>
