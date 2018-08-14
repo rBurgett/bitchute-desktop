@@ -112,7 +112,7 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkU
       return (
         <div key={v._id} className={'video-item'} style={styles.itemContainer} onClick={onClick} onContextMenu={onContextMenu}>
           <img src={v.enclosure.url} style={styles.itemImage} />
-          <div dangerouslySetInnerHTML={{__html: v.title}}></div>
+          <div dangerouslySetInnerHTML={{__html: v.title}} style={{userSelect: 'none'}}></div>
           {v.played ? '' : <div style={styles.unplayedMarker} className={'unplayed-marker'} title={'Mark watched'} onClick={onWatchClick}></div>}
         </div>
       );
