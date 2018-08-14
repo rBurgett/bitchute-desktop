@@ -64,3 +64,6 @@ typings/
 .DS_Store
 
 /public/js
+/dist
+/temp
+/cache

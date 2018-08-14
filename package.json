@@ -6,7 +6,10 @@
   "scripts": {
     "start": "electron .",
     "build": "babel src --out-dir ./public/js",
-    "watch": "babel src --watch --out-dir ./public/js"
+    "watch": "babel src --watch --out-dir ./public/js",
+    "build-native": "npm run build && node copy-build-files.js && cd temp && npm install --production && cd .. && electron-builder --dir",
+    "pack-native": "npm run build && node copy-build-files.js && cd temp && npm install --production && cd .. && electron-builder",
+    "publish-native": "npm run build && node copy-build-files.js && cd temp && npm install --production && cd .. && electron-builder --publish always"
   },
   "repository": {
     "type": "git",
@@ -24,10 +27,12 @@
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-react": "^6.24.1",
+    "co": "^4.6.0",
     "electron": "^2.0.7",
     "eslint": "^5.3.0",
     "eslint-plugin-react": "^7.10.0",
-    "font-awesome": "^4.7.0"
+    "font-awesome": "^4.7.0",
+    "rmrf-promise": "^1.1.0"
   },
   "dependencies": {
     "electron-context-menu": "^0.10.0",
@@ -45,5 +50,56 @@
     "superagent": "^3.8.3",
     "sweetalert2": "^7.26.11",
     "uuid": "^3.3.2"
+  },
+  "build": {
+    "electronVersion": "1.7.15",
+    "appId": "com.ryanburgett.bitchute-desktop",
+    "productName": "BitChute Desktop",
+    "copyright": "Copyright © 2018 Ryan Burgett",
+    "directories": {
+      "app": "temp",
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "./public/images/favicon.ico",
+      "publish": {
+        "provider": "github",
+        "releaseType": "draft"
+      }
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities",
+      "icon": "./public/images/bitchute.icns",
+      "publish": {
+        "provider": "github",
+        "releaseType": "draft"
+      }
+    },
+    "linux": {
+      "target": "appImage",
+      "icon": "./public/images/linux_icons/",
+      "synopsis": "Copyright © 2018 Ryan Burgett",
+      "description": "Copyright © 2018 Ryan Burgett",
+      "category": "Utility",
+      "desktop": {
+        "Name": "BitChute Desktop"
+      },
+      "publish": {
+        "provider": "github",
+        "releaseType": "draft"
+      }
+    }
   }
 }
