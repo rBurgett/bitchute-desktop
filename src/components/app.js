@@ -37,7 +37,8 @@ class App extends React.Component {
       'onAddChannelClick',
       'onChannelClick',
       'onDeleteChannel',
-      'onPlayVideo'
+      'onPlayVideo',
+      'onMarkWatched'
     ]);
   }
 
@@ -194,6 +195,26 @@ class App extends React.Component {
     win.loadURL(video.link);
   }
 
+  async onMarkWatched(_id) {
+    try{
+      const { videos } = this.state;
+      const idx = videos.findIndex(v => v._id === _id);
+      const video = videos[idx];
+      this.setState({
+        ...this.state,
+        videos: [
+          ...videos.slice(0, idx),
+          video.set('played', true),
+          ...videos.slice(idx + 1)
+        ]
+      });
+      await db.videos.update({ _id }, {$set: {played: true}});
+    } catch(err) {
+      handleError(err);
+    }
+
+  }
+
   render() {
 
     console.log('state', this.state);
@@ -218,7 +239,7 @@ class App extends React.Component {
         </nav>
         <div style={styles.flexContainer}>
           {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} />}
-          {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} />}
+          {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} onMarkWatched={this.onMarkWatched} />}
         </div>
       </div>
     );

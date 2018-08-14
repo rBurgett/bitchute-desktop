@@ -7,3 +7,9 @@
 .video-item:hover {
   border-color: #434857;
 }
+.unplayed-marker {
+  background-color: #cc7b18;
+}
+.unplayed-marker:hover {
+  background-color: #FFAE4B;
+}
