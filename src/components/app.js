@@ -287,7 +287,7 @@ class App extends React.Component {
     return (
       <div style={styles.container}>
         <nav className={'navbar navbar-expand-sm fixed-top navbar-dark bg-dark app-navbar'}>
-          <a className="navbar-brand" href={'#'}>BitChute Desktop <span className={'text-muted'}>{version}</span></a>
+          <span style={{cursor: 'default'}} className="navbar-brand" href={'#'}>BitChute Desktop <span className={'text-muted'}>{version}</span></span>
         </nav>
         <div style={styles.flexContainer}>
           {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} onMarkAllWatched={this.onMarkAllWatched} />}

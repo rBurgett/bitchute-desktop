@@ -137,7 +137,7 @@ const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChann
   return (
     <div style={styles.col1}>
       <div style={styles.col1Header}>
-        <h2 style={{flexGrow: 1}}>Channels</h2>
+        <h2 style={{flexGrow: 1, cursor: 'default'}}>Channels</h2>
         <div>
           <button type={'button'} style={{cursor: 'pointer'}} className={'btn btn-outline-primary'} onClick={addChannelClicked}><i className={'fa fa-plus'} /></button>
         </div>
