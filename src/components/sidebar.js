@@ -7,7 +7,7 @@ import Video from './video';
 
 const { Menu } = remote;
 
-const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChannelClick, onDeleteChannel }) => {
+const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChannelClick, onDeleteChannel, onMarkAllWatched }) => {
 
   const borderColor = '#434857';
 
@@ -62,27 +62,39 @@ const Sidebar = ({ selectedChannel, channels, videos, onAddChannelClick, onChann
       e.preventDefault();
       console.log(e);
       console.log(e.clientX, e.clientY);
-      const menu = Menu.buildFromTemplate([{
-        label: 'Delete Channel',
-        click: async function() {
-          try {
-            const { value: confirmed } = await swal({
-              type: 'warning',
-              text: `Are you sure that you want to delete ${c.title}? If you continue, this channel and all associated videos will be removed.`,
-              showCancelButton: true
-            });
-            if(confirmed) onDeleteChannel(c._id);
-          } catch(err) {
-            handleError(err);
+      const menu = Menu.buildFromTemplate([
+        {
+          label: 'Mark all watched',
+          click: async function() {
+            try {
+              onMarkAllWatched(c._id);
+            } catch(err) {
+              handleError(err);
+            }
+          }
+        },
+        {
+          label: 'Delete Channel',
+          click: async function() {
+            try {
+              const { value: confirmed } = await swal({
+                type: 'warning',
+                text: `Are you sure that you want to delete ${c.title}? If you continue, this channel and all associated videos will be removed.`,
+                showCancelButton: true
+              });
+              if(confirmed) onDeleteChannel(c._id);
+            } catch(err) {
+              handleError(err);
+            }
           }
         }
-      }]);
+      ]);
       menu.popup({});
     };
 
     return (
       <li key={c._id} className={'nav-item'}>
-        <a href={'#'} className={'nav-link' + (c._id === selectedChannel ? ' active' : '')} onClick={onClick} onContextMenu={onContextMenu}>{c.title} <small className={'badge badge-unwatched'}>{unplayedLength}</small></a>
+        <a href={'#'} className={'nav-link' + (c._id === selectedChannel ? ' active' : '')} onClick={onClick} onContextMenu={onContextMenu}>{c.title} {unplayedLength > 0 ? <small className={'badge badge-unwatched'}>{unplayedLength}</small> : ''}</a>
       </li>
     );
   });
@@ -114,7 +126,8 @@ Sidebar.propTypes = {
   videos: PropTypes.arrayOf(PropTypes.instanceOf(Video)),
   onAddChannelClick: PropTypes.func,
   onChannelClick: PropTypes.func,
-  onDeleteChannel: PropTypes.func
+  onDeleteChannel: PropTypes.func,
+  onMarkAllWatched: PropTypes.func
 };
 
 export default Sidebar;

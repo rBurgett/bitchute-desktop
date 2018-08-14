@@ -38,7 +38,8 @@ class App extends React.Component {
       'onChannelClick',
       'onDeleteChannel',
       'onPlayVideo',
-      'onMarkWatched'
+      'onMarkWatched',
+      'onMarkAllWatched'
     ]);
   }
 
@@ -215,6 +216,31 @@ class App extends React.Component {
 
   }
 
+  async onMarkAllWatched(_id) {
+    try {
+      const { videos } = this.state;
+      const filteredVideos = videos
+        .filter(v => v.channel === _id)
+        .filter(v => !v.played);
+      let newVideos = videos;
+      for(const video of filteredVideos) {
+        const idx = videos.findIndex(v => v._id === video._id);
+        newVideos = [
+          ...newVideos.slice(0, idx),
+          video.set('played', true),
+          ...newVideos.slice(idx + 1)
+        ];
+        await db.videos.update({ _id: video._id }, {$set: {played: true}});
+      }
+      this.setState({
+        ...this.state,
+        videos: newVideos
+      });
+    } catch(err) {
+      handleError(err);
+    }
+  }
+
   render() {
 
     console.log('state', this.state);
@@ -238,7 +264,7 @@ class App extends React.Component {
           <a className="navbar-brand" href={'#'}>BitChute Desktop <span className={'text-muted'}>{version}</span></a>
         </nav>
         <div style={styles.flexContainer}>
-          {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} />}
+          {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} onMarkAllWatched={this.onMarkAllWatched} />}
           {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} onMarkWatched={this.onMarkWatched} />}
         </div>
       </div>

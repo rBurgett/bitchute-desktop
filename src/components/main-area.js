@@ -44,6 +44,7 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched }) => {
       const onClick = e => {
         e.preventDefault();
         onPlayVideo(v._id);
+        onMarkWatched(v._id);
       };
       const onWatchClick = e => {
         e.preventDefault();
