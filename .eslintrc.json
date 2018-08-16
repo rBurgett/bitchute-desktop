@@ -31,7 +31,6 @@
     "func-style": [1, "expression", { "allowArrowFunctions": true }],
     "jsx-quotes": [1, "prefer-double"],
     "key-spacing": [1, {"beforeColon": false, "afterColon": true}],
-    "linebreak-style": [2, "unix"],
     "arrow-spacing": [1, {"before": true, "after": true}],
     "no-var": 2,
     "prefer-const": [1, {"destructuring": "all"}],
