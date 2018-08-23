@@ -50,7 +50,8 @@
     "rss-parser": "^3.4.2",
     "superagent": "^3.8.3",
     "sweetalert2": "^7.26.11",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.2",
+    "webtorrent": "^0.102.1"
   },
   "build": {
     "electronVersion": "1.7.15",

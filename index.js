@@ -27,6 +27,7 @@ app.on('ready', () => {
 
   appWindow.once('ready-to-show', () => {
     appWindow.show();
+    if(isDev) appWindow.toggleDevTools();
   });
 
   appWindow.loadURL(`file://${__dirname}/public/index.html`);

@@ -14,6 +14,16 @@ const { BrowserWindow } = remote;
 
 const parser = new Parser();
 
+const getLinks = async function(_id) {
+  const { text } = await request.get(`https://www.bitchute.com/video/${_id}/`);
+  let magnetLink = '', mp4Link = '';
+  const magnetPatt = /"(magnet:.+?)"/;
+  if(magnetPatt.test(text)) magnetLink = text.match(magnetPatt)[1];
+  const mp4Patt = /<video(?:.|\n)+?src="(.+?\.mp4)"/;
+  if(mp4Patt.test(text)) mp4Link = text.match(mp4Patt)[1];
+  return { magnetLink, mp4Link };
+};
+
 const getFeedFromURL = async function(feedURL) {
   const { text } = await request.get(feedURL)
     .buffer()
@@ -60,6 +70,17 @@ class App extends React.Component {
       const channels = channelsFromDB.map(c => new Channel(c));
       const videosFromDB = await db.videos.find({});
       const videos = videosFromDB.map(v => new Video(v));
+      for(let i = 0; i < videos.length; i++) {
+        const video = videos[i];
+        if(!video.magnetLink || !video.mp4Link) {
+          const {magnetLink, mp4Link} = await getLinks(video._id);
+          await db.videos.update({_id: video._id}, {$set: {magnetLink, mp4Link}});
+          const newVideo = video
+            .set('magnetLink', magnetLink)
+            .set('mp4Link', mp4Link);
+          videos[i] = newVideo;
+        }
+      }
       this.setState({
         ...this.state,
         channels,
@@ -141,8 +162,14 @@ class App extends React.Component {
           progress: 0
         }))
         .map(i => new Video(i));
-      for(const video of videos) {
-        await db.videos.insert(video);
+      for(let i = 0; i < videos.length; i++) {
+        const video = videos[i];
+        const {magnetLink, mp4Link} = await getLinks(video._id);
+        const newVideo = video
+          .set('magnetLink', magnetLink)
+          .set('mp4Link', mp4Link);
+        videos[i] = newVideo;
+        await db.videos.insert(newVideo);
       }
       this.setState({
         ...this.state,
@@ -287,7 +314,7 @@ class App extends React.Component {
     return (
       <div style={styles.container}>
         <nav className={'navbar navbar-expand-sm fixed-top navbar-dark bg-dark app-navbar'}>
-          <span style={{cursor: 'default'}} className="navbar-brand" href={'#'}>BitChute Desktop <span className={'text-muted'}>{version}</span></span>
+          <span style={{cursor: 'default'}} className="navbar-brand">BitChute Desktop <span className={'text-muted'}>{version}</span></span>
         </nav>
         <div style={styles.flexContainer}>
           {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} onMarkAllWatched={this.onMarkAllWatched} />}

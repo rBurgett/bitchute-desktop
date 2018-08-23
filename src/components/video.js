@@ -38,6 +38,10 @@ class Video {
     this.progress = data.progress || 0;
     /** @type {VideoEnclosure} */
     this.enclosure = data.enclosure;
+    /** @type {string} */
+    this.magnetLink = data.magnetLink || '';
+    /** @type {string} */
+    this.mp4Link = data.mp4Link || '';
   }
 
   /**
