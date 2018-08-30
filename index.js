@@ -74,6 +74,9 @@ app.on('ready', () => {
   ipcMain.on('getDataPath', e => {
     e.returnValue = dataPath;
   });
+  ipcMain.on('getTorrentPath', e => {
+    e.returnValue = path.join(app.getPath('home'), '.bitchute-desktop-temp');
+  });
 
 });
 

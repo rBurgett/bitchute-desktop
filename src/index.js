@@ -5,6 +5,13 @@ import Datastore from 'nedb-promises';
 import path from 'path';
 import swal from 'sweetalert2';
 import App from './components/app';
+import Seeder from './components/seeder';
+
+localStorage.setItem('magnets', '[]');
+
+const seeder = new Seeder({
+  path: ipcRenderer.sendSync('getTorrentPath')
+});
 
 const handleError = err => {
   console.error(err);
@@ -26,4 +33,4 @@ window.db = db;
 const version = ipcRenderer.sendSync('getVersion');
 document.title = document.title + ' ' + version;
 
-ReactDOM.render(<App version={version} />, document.getElementById('js-main'));
+ReactDOM.render(<App version={version} seeder={seeder} />, document.getElementById('js-main'));

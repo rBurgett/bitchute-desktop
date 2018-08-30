@@ -9,6 +9,7 @@ import Sidebar from './sidebar';
 import Channel from './channel';
 import Video from './video';
 import MainArea from './main-area';
+import Seeder from './seeder';
 
 const { BrowserWindow } = remote;
 
@@ -57,6 +58,16 @@ class App extends React.Component {
   async componentDidMount() {
     try {
 
+      // const { seeder } = this.props;
+
+      swal({
+        title: 'Initializing...',
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        allowEnterKey: false,
+        showConfirmButton: false
+      });
+
       window.addEventListener('resize', e => {
         const { innerHeight, innerWidth } = e.target;
         this.setState({
@@ -87,6 +98,10 @@ class App extends React.Component {
         videos
       });
 
+      // await seeder.initialize();
+
+      swal.close();
+
       await this.updateChannels(channels);
 
       setInterval(() => {
@@ -99,6 +114,7 @@ class App extends React.Component {
   }
 
   async updateChannels(channels) {
+    // const { seeder } = this.props;
     try {
       if(channels.length > 0) {
         const newVideos = [];
@@ -118,13 +134,37 @@ class App extends React.Component {
             }
           }
         }
+        const allNewVideos = [
+          ...this.state.videos,
+          ...newVideos
+        ];
         this.setState({
           ...this.state,
-          videos: [
-            ...this.state.videos,
-            ...newVideos
-          ]
+          videos: allNewVideos
         });
+        const sorted = [...allNewVideos]
+          .filter(v => v.magnetLink)
+          .sort((a, b) => {
+            if(a.played === b.played) {
+              return b.isoDate.localeCompare(a.isoDate);
+            } else {
+              return a.played ? 1 : -1;
+            }
+          });
+        const videosToSeed = channels
+          .map(c => {
+            const selected = [];
+            for(const video of sorted) {
+              if(video.channel !== c._id) continue;
+              selected.push(video.magnetLink);
+              if(selected.length === 1) break;
+            }
+            return selected;
+          })
+          .reduce((arr, a) => arr.concat(a), []);
+        console.log('videosToSeed', videosToSeed);
+        // await seeder.setMagnets(videosToSeed);
+        console.log('Done!');
       }
     } catch(err) {
       handleError(err);
@@ -169,6 +209,8 @@ class App extends React.Component {
           .set('magnetLink', magnetLink)
           .set('mp4Link', mp4Link);
         videos[i] = newVideo;
+        const videoFromDB = await db.videos.findOne({ _id: newVideo._id });
+        debugger;
         await db.videos.insert(newVideo);
       }
       this.setState({
@@ -326,7 +368,8 @@ class App extends React.Component {
 
 }
 App.propTypes = {
-  version: PropTypes.string
+  version: PropTypes.string,
+  seeder: PropTypes.instanceOf(Seeder)
 };
 
 export default App;
