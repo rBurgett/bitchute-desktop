@@ -9,15 +9,22 @@ const { platform } = process;
 
 require('electron-context-menu')();
 
-// const handleError = err => {
-//   console.error(err);
-// };
+const handleError = err => {
+  console.error(err);
+};
+ipcMain.on('handleError', (e, err) => handleError(err));
 
 const dataPath = app.getPath('userData');
 
 app.on('ready', () => {
 
   const { width, height } = electron.screen.getPrimaryDisplay().workAreaSize;
+
+  const seederWindow = new BrowserWindow({
+    show: false
+  });
+  seederWindow.loadURL(`file://${__dirname}/public/seeder.html`);
+  // if(isDev) seederWindow.toggleDevTools();
 
   const appWindow = new BrowserWindow({
     show: false,
@@ -27,7 +34,7 @@ app.on('ready', () => {
 
   appWindow.once('ready-to-show', () => {
     appWindow.show();
-    if(isDev) appWindow.toggleDevTools();
+    // if(isDev) appWindow.toggleDevTools();
   });
 
   appWindow.loadURL(`file://${__dirname}/public/index.html`);
@@ -73,6 +80,18 @@ app.on('ready', () => {
   });
   ipcMain.on('getDataPath', e => {
     e.returnValue = dataPath;
+  });
+  ipcMain.on('getTorrentPath', e => {
+    e.returnValue = path.join(app.getPath('home'), '.bitchute-desktop-temp');
+  });
+  ipcMain.on('seederInitialized', () => {
+    appWindow.send('seederInitialized');
+  });
+  ipcMain.on('setMagnets', (e, magnets) => {
+    seederWindow.send('setMagnets', magnets);
+  });
+  appWindow.on('close', () => {
+    seederWindow.close();
   });
 
 });

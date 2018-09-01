@@ -1,4 +1,4 @@
-import { remote } from 'electron';
+import { ipcRenderer, remote } from 'electron';
 import bindAll from 'lodash/bindAll';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -32,6 +32,10 @@ const getFeedFromURL = async function(feedURL) {
   return feed;
 };
 
+const initialized = new Promise(resolve => {
+  ipcRenderer.on('seederInitialized', resolve);
+});
+
 class App extends React.Component {
 
   constructor(props) {
@@ -56,6 +60,14 @@ class App extends React.Component {
 
   async componentDidMount() {
     try {
+
+      swal({
+        title: 'Initializing...',
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        allowEnterKey: false,
+        showConfirmButton: false
+      });
 
       window.addEventListener('resize', e => {
         const { innerHeight, innerWidth } = e.target;
@@ -86,6 +98,10 @@ class App extends React.Component {
         channels,
         videos
       });
+
+      await initialized;
+
+      swal.close();
 
       await this.updateChannels(channels);
 
@@ -118,13 +134,35 @@ class App extends React.Component {
             }
           }
         }
+        const allNewVideos = [
+          ...this.state.videos,
+          ...newVideos
+        ];
         this.setState({
           ...this.state,
-          videos: [
-            ...this.state.videos,
-            ...newVideos
-          ]
+          videos: allNewVideos
         });
+        const sorted = [...allNewVideos]
+          .filter(v => v.magnetLink)
+          .sort((a, b) => {
+            if(a.played === b.played) {
+              return b.isoDate.localeCompare(a.isoDate);
+            } else {
+              return a.played ? 1 : -1;
+            }
+          });
+        const videosToSeed = channels
+          .map(c => {
+            const selected = [];
+            for(const video of sorted) {
+              if(video.channel !== c._id) continue;
+              selected.push(video.magnetLink);
+              if(selected.length === 3) break;
+            }
+            return selected;
+          })
+          .reduce((arr, a) => arr.concat(a), []);
+        ipcRenderer.send('setMagnets', videosToSeed);
       }
     } catch(err) {
       handleError(err);
@@ -164,12 +202,16 @@ class App extends React.Component {
         .map(i => new Video(i));
       for(let i = 0; i < videos.length; i++) {
         const video = videos[i];
-        const {magnetLink, mp4Link} = await getLinks(video._id);
-        const newVideo = video
-          .set('magnetLink', magnetLink)
-          .set('mp4Link', mp4Link);
-        videos[i] = newVideo;
-        await db.videos.insert(newVideo);
+        try {
+          const {magnetLink, mp4Link} = await getLinks(video._id);
+          const newVideo = video
+            .set('magnetLink', magnetLink)
+            .set('mp4Link', mp4Link);
+          videos[i] = newVideo;
+          await db.videos.update({ _id: newVideo._id }, newVideo, {upsert: true});
+        } catch(err) {
+          continue;
+        }
       }
       this.setState({
         ...this.state,
