@@ -29,6 +29,7 @@ class Seeder {
     if(magnets.length === 0) storage.setItem('magnets', []);
     this._torrents = new Map();
     this._initialized = false;
+    this._playing = new Set();
   }
 
   async initialize() {
@@ -49,12 +50,31 @@ class Seeder {
     this._initialized = true;
   }
 
+  setPlaying(magnet, playing = false) {
+    if(!magnet) return;
+    if(playing) {
+      this._playing.add(magnet);
+    } else {
+      this._playing.delete(magnet);
+    }
+    const torrent = this._torrents.get(magnet);
+    if(torrent && torrent.progress === 1) {
+      return torrent.files.map(f => {
+        const torrentPath = path.join(this._torrentOptions.path, f.path);
+        return torrentPath;
+      });
+    } else {
+      return [];
+    }
+  }
+
   async setMagnets(magnets = []) {
     try {
       if (!this._initialized) throw new Error('You cannot call setMagnets until the seeder has been initialized');
       const oldMagnets = [...this._torrents.keys()];
       const toRemove = oldMagnets.filter(m => !magnets.includes(m));
       for(const magnet of toRemove) {
+        if(this._playing.has(magnet)) continue;
         const torrent = this._torrents.get(magnet);
         if(!torrent) continue;
         const { files } = torrent;
@@ -100,4 +120,8 @@ seeder.initialize()
   .catch(err => ipcRenderer.send('handleError', err));
 ipcRenderer.on('setMagnets', (e, magnets) => {
   seeder.setMagnets(magnets);
+});
+ipcRenderer.on('setPlaying', (e, magnet, playing) => {
+  const files = seeder.setPlaying(magnet, playing);
+  ipcRenderer.send('localFiles', files);
 });

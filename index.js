@@ -24,7 +24,7 @@ app.on('ready', () => {
     show: false
   });
   seederWindow.loadURL(`file://${__dirname}/public/seeder.html`);
-  // if(isDev) seederWindow.toggleDevTools();
+  if(isDev) seederWindow.toggleDevTools();
 
   const appWindow = new BrowserWindow({
     show: false,
@@ -95,21 +95,26 @@ app.on('ready', () => {
   });
 
   ipcMain.on('playVideo', (e, video) => {
-    console.log('playVideo', video);
-    const videoWindow = new BrowserWindow({
-      width: 873,
-      height: 519,
-      show: false
+    ipcMain.once('localFiles', (ee, files) => {
+      const videoWindow = new BrowserWindow({
+        width: 873,
+        height: 519,
+        show: false
+      });
+      videoWindow.setMenu(null);
+      videoWindow.loadURL(`file://${__dirname}/public/player.html`);
+      // if(isDev) videoWindow.toggleDevTools();
+      videoWindow.once('ready-to-show', () => {
+        videoWindow.show();
+      });
+      ipcMain.once('getVideo', eee => {
+        eee.returnValue = files.length > 0 ? files[0] : video.mp4Link;
+      });
+      videoWindow.on('close', () => {
+        if(!seederWindow.isDestroyed()) seederWindow.send('setPlaying', video.magnetLink, false);
+      });
     });
-    videoWindow.setMenu(null);
-    videoWindow.loadURL(`file://${__dirname}/public/player.html`);
-    // if(isDev) videoWindow.toggleDevTools();
-    videoWindow.once('ready-to-show', () => {
-      videoWindow.show();
-    });
-    ipcMain.once('getVideo', ee => {
-      ee.returnValue = video.mp4Link;
-    });
+    seederWindow.send('setPlaying', video.magnetLink, true);
   });
 
 });
