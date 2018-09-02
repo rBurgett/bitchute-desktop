@@ -94,6 +94,24 @@ app.on('ready', () => {
     seederWindow.close();
   });
 
+  ipcMain.on('playVideo', (e, video) => {
+    console.log('playVideo', video);
+    const videoWindow = new BrowserWindow({
+      width: 873,
+      height: 519,
+      show: false
+    });
+    videoWindow.setMenu(null);
+    videoWindow.loadURL(`file://${__dirname}/public/player.html`);
+    // if(isDev) videoWindow.toggleDevTools();
+    videoWindow.once('ready-to-show', () => {
+      videoWindow.show();
+    });
+    ipcMain.once('getVideo', ee => {
+      ee.returnValue = video.mp4Link;
+    });
+  });
+
 });
 
 // Properly close the application

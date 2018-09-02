@@ -261,13 +261,14 @@ class App extends React.Component {
   onPlayVideo(_id) {
     console.log(_id);
     const video = this.state.videos.find(v => v._id === _id);
-    let win = new BrowserWindow({
-      backgroundColor: '#000'
-    });
-    win.on('closed', () => {
-      win = null;
-    });
-    win.loadURL(video.link);
+    ipcRenderer.send('playVideo', video);
+    // let win = new BrowserWindow({
+    //   backgroundColor: '#000'
+    // });
+    // win.on('closed', () => {
+    //   win = null;
+    // });
+    // win.loadURL(video.link);
   }
 
   async onMarkWatched(_id) {
