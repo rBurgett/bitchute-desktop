@@ -1,4 +1,4 @@
-import { ipcRenderer, remote } from 'electron';
+import { ipcRenderer } from 'electron';
 import bindAll from 'lodash/bindAll';
 import PropTypes from 'prop-types';
 import React from 'react';
@@ -9,8 +9,6 @@ import Sidebar from './sidebar';
 import Channel from './channel';
 import Video from './video';
 import MainArea from './main-area';
-
-const { BrowserWindow } = remote;
 
 const parser = new Parser();
 
@@ -54,7 +52,8 @@ class App extends React.Component {
       'onPlayVideo',
       'onMarkWatched',
       'onMarkAllWatched',
-      'onMarkUnwatched'
+      'onMarkUnwatched',
+      'onResetProgress'
     ]);
   }
 
@@ -108,6 +107,23 @@ class App extends React.Component {
       setInterval(() => {
         this.updateChannels(this.state.channels);
       }, 30000);
+
+      ipcRenderer.on('progress', async function(e, _id, currentTime, duration) {
+        db.videos.update({ _id }, {$set: {
+          progress: currentTime,
+          duration
+        }});
+        const { state } = this;
+        const idx = state.videos.findIndex(v => v._id === _id);
+        this.setState({
+          ...this.state,
+          videos: [
+            ...state.videos.slice(0, idx),
+            state.videos[idx].set('progress', currentTime).set('duration', duration),
+            ...state.videos.slice(idx + 1)
+          ]
+        });
+      }.bind(this));
 
     } catch(err) {
       handleError(err);
@@ -262,13 +278,6 @@ class App extends React.Component {
     console.log(_id);
     const video = this.state.videos.find(v => v._id === _id);
     ipcRenderer.send('playVideo', video);
-    // let win = new BrowserWindow({
-    //   backgroundColor: '#000'
-    // });
-    // win.on('closed', () => {
-    //   win = null;
-    // });
-    // win.loadURL(video.link);
   }
 
   async onMarkWatched(_id) {
@@ -334,6 +343,25 @@ class App extends React.Component {
     }
   }
 
+  async onResetProgress(_id) {
+    try{
+      const { videos } = this.state;
+      const idx = videos.findIndex(v => v._id === _id);
+      const video = videos[idx];
+      this.setState({
+        ...this.state,
+        videos: [
+          ...videos.slice(0, idx),
+          video.set('progress', 0),
+          ...videos.slice(idx + 1)
+        ]
+      });
+      await db.videos.update({ _id }, {$set: {progress: 0}});
+    } catch(err) {
+      handleError(err);
+    }
+  }
+
   render() {
 
     console.log('state', this.state);
@@ -361,7 +389,7 @@ class App extends React.Component {
         </nav>
         <div style={styles.flexContainer}>
           {<Sidebar selectedChannel={selectedChannel} channels={channels} videos={videos} onAddChannelClick={this.onAddChannelClick} onChannelClick={this.onChannelClick} onDeleteChannel={this.onDeleteChannel} onMarkAllWatched={this.onMarkAllWatched} />}
-          {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} onMarkWatched={this.onMarkWatched} onMarkUnwatched={this.onMarkUnwatched} />}
+          {<MainArea selectedChannel={selectedChannel} videos={videos} onPlayVideo={this.onPlayVideo} onMarkWatched={this.onMarkWatched} onMarkUnwatched={this.onMarkUnwatched} onResetProgress={this.onResetProgress} />}
         </div>
       </div>
     );

@@ -6,7 +6,7 @@ import Video from './video';
 
 const { Menu } = remote;
 
-const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkUnwatched }) => {
+const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkUnwatched, onResetProgress }) => {
 
   const styles = {
     container: {
@@ -37,6 +37,18 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkU
       width: 15,
       height: 15,
       borderRadius: '50%'
+    },
+    progressBarContainer: {
+      backgroundColor: '#000',
+      width: '100%'
+    },
+    progressBar: {
+      backgroundColor: '#cc7b18',
+      height: 5
+    },
+    spacer: {
+      width: '100%',
+      height: 5
     }
   };
 
@@ -60,13 +72,27 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkU
         const videoLink = `https://www.bitchute.com/video/${v._id}/`;
         const menu = Menu.buildFromTemplate([
           {
-            label: v.played ? 'Mark unwatched' : 'Mark watched',
+            label: v.played ? 'Mark new' : 'Mark watched',
             click: () => {
               try {
                 if(v.played) {
                   onMarkUnwatched(v._id);
                 } else {
                   onMarkWatched(v._id);
+                }
+              } catch(err) {
+                handleError(err);
+              }
+            }
+          },
+          {
+            label: 'Reset progress',
+            click: () => {
+              try {
+                if(v.played) {
+                  onResetProgress(v._id);
+                } else {
+                  onResetProgress(v._id);
                 }
               } catch(err) {
                 handleError(err);
@@ -113,6 +139,10 @@ const MainArea = ({ selectedChannel, videos, onPlayVideo, onMarkWatched, onMarkU
       return (
         <div key={v._id} className={'video-item'} style={styles.itemContainer} onClick={onClick} onContextMenu={onContextMenu}>
           <img src={v.enclosure.url} style={styles.itemImage} />
+          {(v.progress & v.duration) ?
+            <div style={styles.progressBarContainer}><div style={{...styles.progressBar, width: (((v.progress * 100) / (v.duration * 100)) * 100) + '%'}}></div></div>
+            :
+            <div style={styles.spacer}></div>}
           <div style={{userSelect: 'none'}}>
             <div dangerouslySetInnerHTML={{__html: v.title}}></div>
             <div className={'text-muted'}><small>{moment(v.isoDate).format('MMM D, YYYY')}</small></div>
@@ -133,7 +163,8 @@ MainArea.propTypes = {
   videos: PropTypes.arrayOf(PropTypes.instanceOf(Video)),
   onPlayVideo: PropTypes.func,
   onMarkWatched: PropTypes.func,
-  onMarkUnwatched: PropTypes.func
+  onMarkUnwatched: PropTypes.func,
+  onResetProgress: PropTypes.func
 };
 
 export default MainArea;
